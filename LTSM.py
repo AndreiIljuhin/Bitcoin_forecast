@@ -1,3 +1,4 @@
+# most of the code is taken from https://www.youtube.com/watch?v=LI94ZkjE_w4
 import pandas as pd
 import datetime
 from datetime import timedelta
@@ -15,7 +16,7 @@ def dateparse (time_in_secs):
     return datetime.datetime.fromtimestamp(float(time_in_secs))
 
 # [ time, low, high, open, close, volume ],
-df = pd.read_csv("bitcoinprices_db3+hours+4zapt.csv", delimiter=';', parse_dates=["time"] ,date_parser=dateparse)
+df = pd.read_csv("bitcoinprices_db3+hours+4zapt.csv", delimiter=',', parse_dates=["time"] ,date_parser=dateparse)
 df = df.iloc[::-1]
 df = df[:-4]
 df = df[df["time"] > df["time"].max() - timedelta(days=365 * 4)]
@@ -55,7 +56,7 @@ def make_dataset(
     data = np.array(features, dtype=np.float32)
     ds = tf.keras.preprocessing.timeseries_dataset_from_array(
       data=data,
-      targets=df[["low", "low+1", "low+2", "low+3", "low+4"]].iloc[(window_size * sequence_stride):],
+      targets=df[["low"]].iloc[(window_size * sequence_stride):],
       sequence_length=window_size,
       sequence_stride=sequence_stride,
       shuffle=shuffle,
@@ -77,26 +78,26 @@ print(feature.shape)
 print(feature[0])
 print(label[0])
 
-# lstm_model = tf.keras.models.Sequential([
-#     tf.keras.layers.LSTM(50, return_sequences=False),
-#     tf.keras.layers.BatchNormalization(),
-#     #tf.keras.layers.LSTM(50, return_sequences=False),
-#     tf.keras.layers.Dense(50, activation="relu"),
-#     tf.keras.layers.Dropout(0.5),
-#     tf.keras.layers.Dense(100, activation="relu"),
-#     tf.keras.layers.Dropout(0.3),
-#     tf.keras.layers.Dense(5)
-# ])
-#
-# optimizer = tf.optimizers.Adam(learning_rate=0.00001)
-# lstm_model.compile(
-#     loss=tf.losses.MeanSquaredError(), # MeanSquaredError MeanAbsoluteError
-#     optimizer=optimizer,
-#     metrics=[tf.metrics.MeanAbsoluteError()]
-# )
+lstm_model = tf.keras.models.Sequential([
+    tf.keras.layers.LSTM(50, return_sequences=False),
+    tf.keras.layers.BatchNormalization(),
+    #tf.keras.layers.LSTM(50, return_sequences=False),
+    tf.keras.layers.Dense(50, activation="relu"),
+    tf.keras.layers.Dropout(0.5),
+    tf.keras.layers.Dense(100, activation="relu"),
+    tf.keras.layers.Dropout(0.3),
+    tf.keras.layers.Dense(5)
+])
+
+optimizer = tf.optimizers.Adam(learning_rate=0.00001)
+lstm_model.compile(
+    loss=tf.losses.MeanSquaredError(), # MeanSquaredError MeanAbsoluteError
+    optimizer=optimizer,
+    metrics=[tf.metrics.MeanAbsoluteError()]
+)
 
 
-lstm_model = load_model('ltsm_300_inp_6_out_low5_window_30_batch_50_lr.00001_G5000_06_11.h5')
+#lstm_model = load_model('ltsm_300_inp_6_out_low5_window_30_batch_50_lr.00001_G5000.h5')
 
 history = lstm_model.fit(
       train_ds, 
@@ -105,7 +106,7 @@ history = lstm_model.fit(
       verbose=2
     )
 
-lstm_model.save('ltsm_300_inp_6_out_low5_window_30_batch_50_lr.00001_G5000_06_11+300.h5')
+lstm_model.save('ltsm_300_inp_6_out_low_window_30_batch_50_lr.00001_G5000.h5')
 
 f = plt.figure()
 f.clear()
@@ -116,12 +117,3 @@ plt.show()
 
 lstm_model.evaluate(train_ds)
 lstm_model.evaluate(val_ds)
-
-
-
-# model = Sequential()
-# model.add(LSTM(100, input_shape=(trainX.shape[1], trainX.shape[2]), return_sequences=True))
-# model.add(LSTM(100))
-# model.add(Dense(1))
-# model.compile(loss='mae', optimizer='adam')
-# history = model.fit(trainX, trainY, epochs=300, batch_size=100, validation_data=(testX, testY), verbose=0, shuffle=False)
