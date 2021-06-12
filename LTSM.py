@@ -16,7 +16,7 @@ def dateparse (time_in_secs):
     return datetime.datetime.fromtimestamp(float(time_in_secs))
 
 # [ time, low, high, open, close, volume ],
-df = pd.read_csv("bitcoinprices_db3+hours+4zapt.csv", delimiter=',', parse_dates=["time"] ,date_parser=dateparse)
+df = pd.read_csv("bitcoinprices.txt", delimiter=',', parse_dates=["time"] ,date_parser=dateparse)
 df = df.iloc[::-1]
 df = df[:-4]
 df = df[df["time"] > df["time"].max() - timedelta(days=365 * 4)]
