@@ -50,7 +50,7 @@ def make_dataset(
      use_scaler=True,
      shuffle=True
      ):
-    features = df[["hour", "low", "high", "open", "close", "volume"]].iloc[:-(window_size * sequence_stride)] #  df[["low"]]
+    features = df[["hour", "low", "high", "open", "close", "volume"]].iloc[:-(window_size * sequence_stride)]
     if use_scaler:
         features = scaler.transform(features)
     data = np.array(features, dtype=np.float32)
